@@ -2,7 +2,7 @@ import requests
 import re
 import pymysql
 
-db = pymysql.connect(host='mysql.litianqiang.com',port=7150,user='movie',password='qiangzi()',db='movie',charset='utf8')
+db = pymysql.connect(host='mysql.ltq.com',port=7150,user='movie',password='ltqqqq()',db='movie',charset='utf8')
 cursor = db.cursor()
 
 def getMovieList(page):
