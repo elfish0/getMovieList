@@ -1,0 +1,42 @@
+import requests
+import re
+import pymysql
+
+db = pymysql.connect(host='mysql.litianqiang.com',port=7150,user='movie',password='qiangzi()',db='movie',charset='utf8')
+cursor = db.cursor()
+
+def getMovieList(page):
+    # 直接取出来的是一个对象
+    res = requests.get('http://www.dytt8.net/html/gndy/dyzz/list_23_{}.html'.format(page))
+    # 源代码的编译方式
+    res.encoding = 'gb2312'                                                 
+    result = res.text
+    reg = r'<a href="(.*?)" class="ulink">(.*?)</a>'
+    reg = re.compile(reg)
+    return re.findall(reg,result)
+
+def getLink(url,title):
+    url = 'http://www.dytt8.net{}'.format(url)
+    res = requests.get(url)
+    res.encoding = 'gb2312'
+    result = res.text
+    reg = r'<div class="co_content8">(.*?)【下载地址】.*?bgcolor="#fdfddf"><a href="(.*?)">'
+    reg = re.compile(reg,re.S)
+    try:
+        # [0]: 这样取出来的是一个元组，而非列表
+        content,link = re.findall(reg,result)[0]                         
+    except Exception as ex:
+        print(title,'-------------------------------出现错误，已忽略')
+        return
+    sql = "insert into dy_dymodels(title,content,link) values('{}','{}','{}')".format(title,content.replace("'","\\'"),link)
+    # 执行sql语句
+    cursor.execute(sql)                                                  
+    print(title,'已保存')
+    db.commit()
+
+for page in range(1,166):
+    for url,title in getMovieList(page):
+        getLink(url,title)
+
+db.close()
+
